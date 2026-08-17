@@ -5,7 +5,7 @@
 #
 # 【動くタイミング】
 #   1. push          … main ブランチに push したとき
-#   2. schedule      … 毎日 5:17（日本時間）。Podcast・noteのRSSを取り直すため
+#   2. schedule      … 毎日 7:17（日本時間）。Podcast・noteのRSSを取り直すため
 #   3. workflow_dispatch … GitHubの「Actions」画面から手動で実行したいとき
 #
 # 【やっていること】
@@ -26,11 +26,11 @@ on:
   #
   # GitHubのcronは UTC（世界標準時）で指定します。
   # 日本時間は UTC+9 なので、9時間さかのぼって書きます。
-  #   日本時間 5:17  −  9時間  =  UTC 20:17（前日）
+  #   日本時間 7:17  −  9時間  =  UTC 22:17（前日）
   #
   # 「毎時00分」は世界中のジョブが集中して遅れやすいため、17分にずらしています。
   schedule:
-    - cron: "17 20 * * *"
+    - cron: "17 22 * * *"
 
   # GitHubの Actions 画面から手動実行できるようにする
   workflow_dispatch:
