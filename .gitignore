@@ -1,5 +1,9 @@
 # build output
 dist/
+
+# 画像の原本（サイズが大きいためリポジトリには含めません）
+# ローカルには残るので、WebPを作り直すときに使えます
+assets/
 # generated types
 .astro/
 

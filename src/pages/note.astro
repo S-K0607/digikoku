@@ -1,0 +1,141 @@
+---
+// ==========================================================================
+// noteページ（/note/）
+//
+// noteの記事本文はこのサイトには転載しません。入口だけを置きます。
+//
+// 【最新記事は RSS から自動取得しています】
+// 取得元は src/data/site.js の links.noteRss です。
+// 取得は「サイトをビルドしたとき」に行われます（訪問者側では通信しません）。
+// ==========================================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import EntryRow from "../components/EntryRow.astro";
+import { site, links } from "../data/site.js";
+import { fetchFeedItems, formatDate } from "../lib/feeds.js";
+
+const title = `note｜${site.name}`;
+const description =
+	"noteでの発信。授業実践、国語教育、ICT、生成AI、探究などについて文章で書いています。";
+
+// --- 最新記事（RSSから自動取得）--------------------------------------------
+// 件数を変えたいときは、下の 8 を書き換えてください。
+// 件数を増やしても、一覧がそのまま下へ伸びるだけです。
+const latestArticles = await fetchFeedItems(links.noteRss.url, 8);
+
+// --- おすすめ記事 ----------------------------------------------------------
+// ここは手で選んで並べる場所です。入れ替えたいときはタイトルとURLを書き換えます。
+const recommendedArticles = [
+	{
+		type: "おすすめ",
+		title: "職場で使うAIは自分で決めない",
+		date: "2026-08-14",
+		description:
+			"研修で毎回出る質問への答え。ツール選びを個人の判断に委ねないという考え方。",
+		url: "https://note.com/skasahara/n/n6ad53637d343",
+		actionLabel: "読む",
+	},
+	{
+		type: "おすすめ",
+		title: "不来方のお城の草に",
+		date: "2026-08-13",
+		description: "盛岡へ。半分リフレッシュ、半分は授業のネタ探しの記録。",
+		url: "https://note.com/skasahara/n/nd51494f77f3b",
+		actionLabel: "読む",
+	},
+];
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="page-hero deco-grid">
+		<div class="container">
+			<a class="page-hero__back" href="/">← デジ国トップへ</a>
+			<h1>note</h1>
+			<p class="page-hero__lead">
+				授業実践、国語教育、ICT、生成AI、探究などについて文章で発信しています。
+			</p>
+		</div>
+	</div>
+
+	{/* --- 紹介 --- */}
+	<section class="section" aria-labelledby="note-about">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="note-about">noteで書いていること</h2>
+			</header>
+
+			<div class="prose">
+				<p>
+					音声では扱いきれない、手順や資料を伴う話を文章で書いています。
+					授業の設計、実際に使ったワークシート、生成AIを授業に持ち込んだときの記録、
+					国語教育についての論考などが中心です。
+				</p>
+				<p>記事の本文はnoteにあります。下のリンクからご覧ください。</p>
+			</div>
+
+			<div class="link-row note-links">
+				<a href={links.note.url} target="_blank" rel="noopener noreferrer">
+					noteですべて読む
+				</a>
+			</div>
+		</div>
+	</section>
+
+	{/* --- 最新記事 --- */}
+	<section class="section" aria-labelledby="note-latest">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="note-latest">最新の記事</h2>
+			</header>
+
+			{
+				latestArticles.length > 0 ? (
+					<ul class="title-list">
+						{latestArticles.map((item) => (
+							<li class="title-list__item">
+								<a
+									class="title-list__link"
+									href={item.url}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									{item.title}
+								</a>
+								<time class="title-list__date" datetime={item.date}>
+									{formatDate(item.date)}
+								</time>
+							</li>
+						))}
+					</ul>
+				) : (
+					<p class="text-muted">
+						記事一覧を読み込めませんでした。上のリンクからnoteをご覧ください。
+					</p>
+				)
+			}
+		</div>
+	</section>
+
+	{/* --- おすすめ記事 --- */}
+	<section class="section" aria-labelledby="note-recommended">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="note-recommended">おすすめ</h2>
+			</header>
+
+			<div class="entry-list">
+				{recommendedArticles.map((item) => <EntryRow {...item} />)}
+			</div>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.note-links {
+		margin-top: var(--space-xl);
+	}
+
+	.entry-list {
+		border-top: 1px solid var(--color-border);
+	}
+</style>

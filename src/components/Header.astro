@@ -1,0 +1,229 @@
+---
+// ==========================================================================
+// Header.astro
+// 全ページ共通のヘッダー（濃紺のブランド領域）。
+// ・左：ブランド表示（デジ国 ＋ 正式名称）
+// ・右：ナビゲーション。スマートフォンではボタンで開閉します。
+//
+// ナビの項目を増やしたいときは src/data/site.js の navigation を編集します。
+// ==========================================================================
+
+import { site, navigation } from "../data/site.js";
+
+// 今どのページを見ているかを調べて、そのリンクに印を付けます。
+// 末尾の "/" の有無で判定がずれないように揃えてから比べます。
+const normalize = (/** @type {string} */ path) =>
+	path !== "/" ? path.replace(/\/$/, "") : "/";
+const currentPath = normalize(Astro.url.pathname);
+---
+
+<header class="site-header">
+	<div class="container site-header__inner">
+		<a class="brand" href="/">
+			<span class="brand__name">{site.name}</span>
+			<span class="brand__full">{site.subtitle}</span>
+		</a>
+
+		{/* スマートフォン用の開閉ボタン（PCではCSSで非表示） */}
+		<button
+			type="button"
+			class="nav-toggle"
+			id="nav-toggle"
+			aria-expanded="false"
+			aria-controls="global-nav"
+		>
+			<span class="nav-toggle__bars" aria-hidden="true"></span>
+			<span class="nav-toggle__label">メニュー</span>
+		</button>
+
+		<nav class="global-nav" id="global-nav" aria-label="サイト内ナビゲーション">
+			<ul class="global-nav__list">
+				{
+					navigation.map((item) => {
+						const isCurrent = normalize(item.href) === currentPath;
+						return (
+							<li>
+								<a
+									href={item.href}
+									class:list={["global-nav__link", { "is-current": isCurrent }]}
+									aria-current={isCurrent ? "page" : undefined}
+								>
+									{item.label}
+								</a>
+							</li>
+						);
+					})
+				}
+			</ul>
+		</nav>
+	</div>
+</header>
+
+<style>
+	.site-header {
+		background-color: var(--color-navy);
+		color: var(--color-text-on-dark);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+	}
+
+	.site-header__inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-lg);
+		flex-wrap: wrap;
+		padding-block: var(--space-md);
+	}
+
+	/* --- ブランド表示（画像ロゴは使わず、文字組みだけで作っています） --- */
+	.brand {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15em;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.brand__name {
+		font-size: 1.5rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		line-height: 1.2;
+		color: #ffffff;
+	}
+
+	.brand__full {
+		font-size: var(--text-xs);
+		letter-spacing: 0.04em;
+		color: var(--color-text-on-dark-muted);
+		line-height: 1.4;
+	}
+
+	.brand:hover .brand__name {
+		color: var(--color-yellow);
+	}
+
+	/* --- ナビゲーション（PC） --------------------------------------- */
+	.global-nav__list {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+	}
+
+	.global-nav__link {
+		display: inline-block;
+		font-size: var(--text-sm);
+		font-weight: 700;
+		color: var(--color-text-on-dark-muted);
+		text-decoration: none;
+		padding-block: var(--space-2xs);
+		border-bottom: 2px solid transparent;
+		white-space: nowrap;
+	}
+
+	.global-nav__link:hover {
+		color: #ffffff;
+		border-bottom-color: var(--color-teal-light);
+	}
+
+	/* 今いるページには黄色の下線を付けます */
+	.global-nav__link.is-current {
+		color: #ffffff;
+		border-bottom-color: var(--color-yellow);
+	}
+
+	/* --- 開閉ボタン（PCでは隠す） ------------------------------------ */
+	.nav-toggle {
+		display: none;
+		align-items: center;
+		gap: var(--space-xs);
+		background-color: transparent;
+		border: 1px solid rgba(255, 255, 255, 0.4);
+		border-radius: var(--radius);
+		color: #ffffff;
+		padding: 0.5em 0.9em;
+		font-size: var(--text-sm);
+		font-weight: 700;
+	}
+
+	.nav-toggle__bars,
+	.nav-toggle__bars::before,
+	.nav-toggle__bars::after {
+		display: block;
+		width: 18px;
+		height: 2px;
+		background-color: currentColor;
+		border-radius: 1px;
+	}
+
+	.nav-toggle__bars {
+		position: relative;
+	}
+
+	.nav-toggle__bars::before,
+	.nav-toggle__bars::after {
+		content: "";
+		position: absolute;
+		left: 0;
+	}
+
+	.nav-toggle__bars::before {
+		top: -6px;
+	}
+	.nav-toggle__bars::after {
+		top: 6px;
+	}
+
+	/* --- スマートフォン・タブレット表示 ------------------------------ */
+	/* ナビ項目が多いので、画面幅が足りない間はボタン開閉に切り替えます */
+	@media (max-width: 1199px) {
+		.nav-toggle {
+			display: inline-flex;
+		}
+
+		.global-nav {
+			/* 閉じている状態。JSが .is-open を付けると開きます */
+			display: none;
+			width: 100%;
+			padding-bottom: var(--space-md);
+		}
+
+		.global-nav.is-open {
+			display: block;
+		}
+
+		.global-nav__list {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0;
+			border-top: 1px solid rgba(255, 255, 255, 0.15);
+		}
+
+		.global-nav__link {
+			display: block;
+			padding: var(--space-md) var(--space-2xs);
+			border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+			white-space: normal;
+		}
+
+		.global-nav__link:hover,
+		.global-nav__link.is-current {
+			border-bottom-color: rgba(255, 255, 255, 0.12);
+			color: var(--color-yellow);
+		}
+	}
+</style>
+
+<script>
+	// スマートフォン用メニューの開閉。これがこのサイトで唯一のJavaScriptです。
+	const toggle = document.getElementById("nav-toggle");
+	const nav = document.getElementById("global-nav");
+
+	if (toggle && nav) {
+		toggle.addEventListener("click", () => {
+			const isOpen = nav.classList.toggle("is-open");
+			// 支援技術にも開閉状態を伝えます
+			toggle.setAttribute("aria-expanded", String(isOpen));
+		});
+	}
+</script>

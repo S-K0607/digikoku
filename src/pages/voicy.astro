@@ -1,0 +1,177 @@
+---
+// ==========================================================================
+// Voicyページ（/voicy/）
+//
+// VoicyにはRSSなどの安定した取得方法がないため、
+// 紹介する放送は下の配列に手で書いています。
+// 放送を追加・入れ替えするときは、タイトルとURLを書き換えるだけです。
+// 件数が増えても、一覧がそのまま下へ伸びます。
+// ==========================================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site, links } from "../data/site.js";
+
+const title = `Voicy｜${site.name}`;
+const description =
+	"Voicy「デジタル時代の国語教育ラジオ」。国語教育、授業、読書、生成AI、探究について毎朝6時半に話しています。";
+
+// --- 初めて聴く方におすすめ ------------------------------------------------
+const starterPicks = [
+	{
+		title: "#331 「デジタル教科書不要論」に思うこと",
+		url: "https://voicy.jp/channel/893814/7856764",
+	},
+	{
+		title: "#302 学校の探究にこそ、静かな時間が必要だ",
+		url: "https://voicy.jp/channel/893814/7778276",
+	},
+];
+
+// --- ジャンル別おすすめ ----------------------------------------------------
+// ジャンルを増やしたいときは、この配列に { genre, items } を1件足してください。
+const genrePicks = [
+	{
+		genre: "生成AI・ICT",
+		items: [
+			{
+				title: "#367 AIの話が伝わらないのは、言葉のせいかもしれない",
+				url: "https://voicy.jp/channel/893814/7977283",
+			},
+			{
+				title: "#331 「デジタル教科書不要論」に思うこと",
+				url: "https://voicy.jp/channel/893814/7856764",
+			},
+		],
+	},
+	{
+		genre: "国語教育・授業・評価",
+		items: [
+			{
+				title: "#284 学習指導要領の論理国語",
+				url: "https://voicy.jp/channel/893814/7725447",
+			},
+			{
+				title: "#360 定期テストに「教科書外の文章」を出し続ける理由",
+				url: "https://voicy.jp/channel/893814/7951983",
+			},
+		],
+	},
+	{
+		genre: "探究学習",
+		items: [
+			{
+				title: "#302 学校の探究にこそ、静かな時間が必要だ",
+				url: "https://voicy.jp/channel/893814/7778276",
+			},
+		],
+	},
+];
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="page-hero deco-grid">
+		<div class="container">
+			<a class="page-hero__back" href="/">← デジ国トップへ</a>
+			<h1>Voicy</h1>
+			<p class="page-hero__lead">デジタル時代の国語教育ラジオ／毎朝6時半更新。</p>
+		</div>
+	</div>
+
+	{/* --- 紹介 --- */}
+	<section class="section" aria-labelledby="voicy-about">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="voicy-about">Voicyで話していること</h2>
+			</header>
+
+			<div class="prose">
+				<p>
+					Voicyでは「デジタル時代の国語教育ラジオ」というチャンネルを、
+					毎朝6時半に更新しています。
+				</p>
+				<p>
+					授業の中で気づいたこと、読んだ本のこと、生成AIやICTを使ってみて考えたこと。
+					Podcastよりも身近で、その日その日の話題を短く話しています。
+				</p>
+				<p>
+					まとまった論考は<a href="/note/">note</a>に、
+					じっくりした対話は<a href="/podcast/">Podcast</a>に置き、
+					Voicyはその手前にある「考えている途中」を話す場にしています。
+				</p>
+			</div>
+
+			<div class="link-row voicy-links">
+				<a href={links.voicy.url} target="_blank" rel="noopener noreferrer">
+					Voicyのチャンネルを開く
+				</a>
+			</div>
+		</div>
+	</section>
+
+	{/* --- 初めて聴く方におすすめ --- */}
+	<section class="section" aria-labelledby="voicy-starter">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="voicy-starter">初めて聴く方におすすめ</h2>
+			</header>
+
+			<ul class="title-list">
+				{
+					starterPicks.map((item) => (
+						<li class="title-list__item">
+							<a
+								class="title-list__link"
+								href={item.url}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{item.title}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</section>
+
+	{/* --- ジャンル別おすすめ --- */}
+	<section class="section" aria-labelledby="voicy-genre">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="voicy-genre">ジャンル別おすすめ</h2>
+			</header>
+
+			{
+				genrePicks.map((group) => (
+					<div class="genre">
+						<h3 class="subheading">{group.genre}</h3>
+						<ul class="title-list">
+							{group.items.map((item) => (
+								<li class="title-list__item">
+									<a
+										class="title-list__link"
+										href={item.url}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{item.title}
+									</a>
+								</li>
+							))}
+						</ul>
+					</div>
+				))
+			}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.voicy-links {
+		margin-top: var(--space-xl);
+	}
+
+	.genre + .genre {
+		margin-top: var(--space-2xl);
+	}
+</style>

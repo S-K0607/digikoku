@@ -1,0 +1,207 @@
+---
+// ==========================================================================
+// お問い合わせページ（/contact/）
+//
+// 3つの連絡手段を置いています。
+//   1. Googleフォーム（匿名OK・いちばん気軽）
+//   2. メールアドレス（スパム対策のため、そのままHTMLに書かない）
+//   3. Google for Education Directory（登壇・研修依頼向け）
+//
+// 【メールアドレスのスパム対策について】
+// インターネット上には、Webページを巡回してメールアドレスを収集する
+// プログラム（スパムボット）がいます。HTMLに "name@example.com" と
+// そのまま書くと、収集されて迷惑メールが増えます。
+//
+// そこでこのページでは、アドレスを「ユーザー名」と「ドメイン」に分けて持ち、
+// ページが表示されたあとにブラウザ側で組み立てています。
+// HTMLのソースを見ても、つながったアドレスはどこにも書かれていません。
+// 人間には普通に見え、コピーもクリックもできます。
+// ==========================================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site, links, contactEmail } from "../data/site.js";
+
+const title = `お問い合わせ｜${site.name}`;
+const description =
+	"「デジ国」へのお問い合わせ。番組への感想、取材・登壇・研修のご依頼はこちらから。";
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="page-hero deco-grid">
+		<div class="container">
+			<a class="page-hero__back" href="/">← デジ国トップへ</a>
+			<h1>お問い合わせ</h1>
+			<p class="page-hero__lead">
+				番組へのご感想、取材・登壇・研修のご依頼など、お気軽にご連絡ください。
+			</p>
+		</div>
+	</div>
+
+	{/* --- 1. Googleフォーム --- */}
+	<section class="section" aria-labelledby="contact-form">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="contact-form">フォームから送る</h2>
+			</header>
+
+			<p class="section-lead">
+					いちばん確実な方法です。匿名で送れます。メールアドレスの入力も不要です。
+				</p>
+
+			<div class="prose">
+				<div class="speech-bubble contact-bubble">
+					<p>
+						番組の感想、「こんなテーマを扱ってほしい」というリクエスト、
+						ちょっとした質問など、どんな内容でも歓迎します。
+					</p>
+				</div>
+
+				{/* このページの主要CTAなので、ここだけボタンにしています */}
+				<p class="contact-actions">
+					<a
+						class="button button--form"
+						href={links.contactForm.url}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{links.contactForm.label}
+					</a>
+				</p>
+				<p class="contact-note">Googleフォームが別のタブで開きます。</p>
+			</div>
+		</div>
+	</section>
+
+	{/* --- 2. メール --- */}
+	<section class="section" aria-labelledby="contact-mail">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="contact-mail">メールで送る</h2>
+			</header>
+
+			<p class="section-lead">
+					ご依頼など、記録が残る形でやり取りしたい場合はこちらへ。
+				</p>
+
+			<div class="prose">
+				{/*
+					アドレスはここには書かず、下のスクリプトが組み立てて差し込みます。
+					data-user / data-domain の2つに分けてあるのがスパム対策です。
+				*/}
+				<p
+					class="email-block"
+					id="contact-email"
+					data-user={contactEmail.user}
+					data-domain={contactEmail.domain}
+				>
+					<span class="email-block__fallback">
+						メールアドレスを表示するにはJavaScriptを有効にしてください。
+						（上のフォームからでもご連絡いただけます）
+					</span>
+				</p>
+			</div>
+		</div>
+	</section>
+
+	{/* --- 3. Google for Education Directory --- */}
+	<section class="section" aria-labelledby="contact-directory">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="contact-directory">研修・登壇のご依頼</h2>
+			</header>
+
+			<p class="explained-links">
+				Google for Education認定イノベーター／コーチ／トレーナーとしての活動は
+				<a
+					class="text-link"
+					href={links.googleDirectory.url}
+					target="_blank"
+					rel="noopener noreferrer"
+				>Google for Education Directory</a>に掲載されています。
+				研修・登壇のご依頼の際にご参照ください。
+			</p>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.contact-bubble {
+		background-color: #f0eee7;
+		margin-bottom: var(--space-lg);
+	}
+
+	.contact-bubble::after {
+		border-top-color: #f0eee7;
+	}
+
+	.contact-actions {
+		margin-top: var(--space-lg);
+	}
+
+	/* お問い合わせフォームはこのページの主要な導線なので、
+	   押せる場所がはっきり分かるようボタンにしています */
+	.button--form {
+		background-color: var(--color-navy);
+		color: #ffffff;
+		font-size: var(--text-base);
+		padding: 0.9em 1.8em;
+	}
+
+	.button--form:hover {
+		background-color: var(--color-teal-dark);
+		color: #ffffff;
+	}
+
+	.contact-note {
+		margin-top: var(--space-sm);
+		font-size: var(--text-sm);
+		color: var(--color-text-muted);
+	}
+
+	.explained-links {
+		max-width: var(--width-narrow);
+		line-height: var(--leading-normal);
+	}
+
+	.email-block {
+		font-size: var(--text-lg);
+		font-weight: 700;
+	}
+
+	.email-block a {
+		color: var(--color-link);
+		text-decoration: none;
+		border-bottom: 2px solid var(--color-yellow);
+	}
+
+	.email-block a:hover {
+		color: var(--color-link-hover);
+	}
+
+	.email-block__fallback {
+		font-size: var(--text-sm);
+		font-weight: 400;
+		color: var(--color-text-muted);
+	}
+</style>
+
+<script>
+	// メールアドレスを組み立てて表示します。
+	// HTMLには "ユーザー名" と "ドメイン" が別々に置いてあり、
+	// ここで初めて "@" でつなげます（スパムボット対策）。
+	const target = document.getElementById("contact-email");
+
+	if (target) {
+		const user = target.dataset.user;
+		const domain = target.dataset.domain;
+
+		if (user && domain) {
+			const address = `${user}@${domain}`;
+			const link = document.createElement("a");
+			link.href = `mailto:${address}`;
+			link.textContent = address;
+
+			target.replaceChildren(link);
+		}
+	}
+</script>

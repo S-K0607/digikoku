@@ -1,0 +1,78 @@
+# ==========================================================================
+# デジ国サイトを GitHub Pages へ公開するための設定
+#
+# このファイルは GitHub 上で自動実行されます（手元のPCでは動きません）。
+#
+# 【動くタイミング】
+#   1. push          … main ブランチに push したとき
+#   2. schedule      … 毎日 5:17（日本時間）。Podcast・noteのRSSを取り直すため
+#   3. workflow_dispatch … GitHubの「Actions」画面から手動で実行したいとき
+#
+# 【やっていること】
+#   リポジトリを取得 → npm install → npm run build → GitHub Pages へ公開
+#
+# ソースコードは書き換えません。RSSの新着はビルド結果のHTMLにだけ反映されます。
+# （＝毎日の自動実行でコミットが増えることはありません）
+# ==========================================================================
+
+name: Deploy to GitHub Pages
+
+on:
+  # main ブランチへの push で公開
+  push:
+    branches: [main]
+
+  # 毎日1回、RSSを取り直して公開しなおす
+  #
+  # GitHubのcronは UTC（世界標準時）で指定します。
+  # 日本時間は UTC+9 なので、9時間さかのぼって書きます。
+  #   日本時間 5:17  −  9時間  =  UTC 20:17（前日）
+  #
+  # 「毎時00分」は世界中のジョブが集中して遅れやすいため、17分にずらしています。
+  schedule:
+    - cron: "17 20 * * *"
+
+  # GitHubの Actions 画面から手動実行できるようにする
+  workflow_dispatch:
+
+# GitHub Pages への公開に必要な最小限の権限だけを与えます
+permissions:
+  contents: read # リポジトリを読む
+  pages: write # Pages へ書き込む
+  id-token: write # デプロイ時の本人確認に使う
+
+# 公開処理が同時に走らないようにします。
+# 実行中の公開は最後まで終わらせたいので、途中で打ち切りません（false）。
+# （待機中のものは、新しいものに置き換えられます）
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # --- ビルド --------------------------------------------------------------
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリを取得
+        uses: actions/checkout@v7
+
+      - name: インストール・ビルド・アップロード
+        uses: withastro/action@v6
+        # package-lock.json があるため、npm が自動的に選ばれます。
+        # Node.js のバージョンも Astro 公式Actionの既定に従います。
+        with:
+          # package.json の "build" を使います（Windows用の回避処理が入った
+          # scripts/build.mjs 経由。Linuxでは通常のビルドになります）
+          build-cmd: npm run build
+
+  # --- 公開 ----------------------------------------------------------------
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages へ公開
+        id: deployment
+        uses: actions/deploy-pages@v5

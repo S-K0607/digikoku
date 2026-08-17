@@ -1,0 +1,215 @@
+---
+// ==========================================================================
+// Footer.astro
+// 全ページ共通のフッター（濃紺のブランド領域）。
+// ・サイト内のページ一覧
+// ・外部の発信媒体（Podcast / Voicy / note / researchmap）
+// ・SNS（今は空。増やすときは下の socialLinks に足すだけです）
+// ==========================================================================
+
+import { site, links } from "../data/site.js";
+
+// サイト内のページ
+const pageLinks = [
+	{ label: "Podcast", href: "/podcast/" },
+	{ label: "Voicy", href: "/voicy/" },
+	{ label: "note", href: "/note/" },
+	{ label: "教育系ポッドキャストの日", href: "/podcast-day/" },
+	{ label: "About", href: "/about/" },
+	{ label: "お問い合わせ", href: "/contact/" },
+];
+
+// 外部の発信媒体（URLは src/data/site.js で管理しています）
+const externalLinks = [
+	{ ...links.podcastSpotify, label: "Podcast（Spotify）" },
+	{ ...links.podcastApple, label: "Podcast（Apple）" },
+	{ ...links.voicy, label: "Voicy" },
+	{ ...links.note, label: "note" },
+	{ ...links.researchmap, label: "researchmap" },
+];
+
+// SNSを追加するときは、この配列に site.js のリンクを足してください。
+const socialLinks = [links.x, links.youtube, links.litlink];
+
+const currentYear = new Date().getFullYear();
+const copyrightYears =
+	currentYear > site.startYear ? `${site.startYear}–${currentYear}` : `${site.startYear}`;
+---
+
+<footer class="site-footer deco-grid">
+	<div class="container">
+		<div class="site-footer__top">
+			{/* --- ブランド --- */}
+			<div class="site-footer__brand">
+				<p class="site-footer__name">{site.name}</p>
+				<p class="site-footer__full">{site.subtitle}</p>
+				<p class="site-footer__note">
+					国語教育、ICT、生成AI、探究、学校について発信しています。
+				</p>
+			</div>
+
+			{/* --- サイト内のページ --- */}
+			<nav class="site-footer__group" aria-labelledby="footer-pages">
+				<h2 class="site-footer__heading" id="footer-pages">サイト内</h2>
+				<ul class="site-footer__list">
+					{
+						pageLinks.map((item) => (
+							<li>
+								<a href={item.href}>{item.label}</a>
+							</li>
+						))
+					}
+				</ul>
+			</nav>
+
+			{/* --- 外部の発信媒体 --- */}
+			<nav class="site-footer__group" aria-labelledby="footer-external">
+				<h2 class="site-footer__heading" id="footer-external">発信媒体</h2>
+				<ul class="site-footer__list">
+					{
+						externalLinks.map((item) => (
+							<li>
+								{
+									// URLが決まっていないものはリンクにせず、仮であることを示します
+									item.url ? (
+										<a href={item.url} target="_blank" rel="noopener noreferrer">
+											{item.label}
+										</a>
+									) : (
+										<span class="site-footer__pending">
+											{item.label}
+											<span class="site-footer__pending-mark">（URL未設定）</span>
+										</span>
+									)
+								}
+							</li>
+						))
+					}
+				</ul>
+			</nav>
+
+			{/* --- SNS：今は項目がないので表示されません --- */}
+			{
+				socialLinks.length > 0 && (
+					<nav class="site-footer__group" aria-labelledby="footer-social">
+						<h2 class="site-footer__heading" id="footer-social">
+							SNS
+						</h2>
+						<ul class="site-footer__list">
+							{socialLinks.map((item) => (
+								<li>
+									<a href={item.url} target="_blank" rel="noopener noreferrer">
+										{item.label}
+									</a>
+								</li>
+							))}
+						</ul>
+					</nav>
+				)
+			}
+		</div>
+
+		<p class="site-footer__copyright">
+			&copy; {copyrightYears} {site.name}（{site.subtitle}）
+		</p>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		background-color: var(--color-navy-deep);
+		color: var(--color-text-on-dark-muted);
+		padding-block: var(--space-2xl) var(--space-lg);
+		margin-top: auto;
+		font-size: var(--text-sm);
+	}
+
+	.site-footer__top {
+		display: grid;
+		grid-template-columns: 1.6fr 1fr 1.2fr 1fr;
+		gap: var(--space-xl);
+		padding-bottom: var(--space-xl);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+	}
+
+	.site-footer__name {
+		font-size: 1.25rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: #ffffff;
+	}
+
+	.site-footer__full {
+		font-size: var(--text-xs);
+		margin-top: var(--space-2xs);
+		color: var(--color-text-on-dark-muted);
+	}
+
+	.site-footer__note {
+		margin-top: var(--space-md);
+		max-width: 24em;
+		line-height: var(--leading-normal);
+	}
+
+	.site-footer__heading {
+		font-size: var(--text-xs);
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		color: var(--color-teal-light);
+		margin-bottom: var(--space-sm);
+	}
+
+	.site-footer__list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+	}
+
+	.site-footer__list a {
+		color: var(--color-text-on-dark-muted);
+		text-decoration: none;
+	}
+
+	.site-footer__list a:hover {
+		color: var(--color-yellow);
+		text-decoration: underline;
+	}
+
+	.site-footer__pending {
+		color: rgba(185, 208, 226, 0.6);
+	}
+
+	.site-footer__pending-mark {
+		font-size: var(--text-xs);
+		margin-left: 0.25em;
+	}
+
+	.site-footer__copyright {
+		padding-top: var(--space-lg);
+		font-size: var(--text-xs);
+		color: rgba(185, 208, 226, 0.75);
+	}
+
+	@media (max-width: 1000px) {
+		.site-footer__top {
+			grid-template-columns: 1fr 1fr 1fr;
+		}
+
+		.site-footer__brand {
+			grid-column: 1 / -1;
+		}
+	}
+
+	@media (max-width: 700px) {
+		.site-footer__top {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.site-footer__top {
+			grid-template-columns: 1fr;
+			gap: var(--space-lg);
+		}
+	}
+</style>

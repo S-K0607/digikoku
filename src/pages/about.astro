@@ -1,0 +1,145 @@
+---
+// ==========================================================================
+// Aboutページ（/about/）
+//
+// プロフィール本文と、参考リンクだけの簡潔なページです。
+// セクションを細かく分けず、見出し・本文・リンクだけで構成しています。
+// リンクには「何が見られるか」を必ず文で添えます（記号だけで示さない）。
+// ==========================================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site, links } from "../data/site.js";
+
+const title = `About｜${site.name}`;
+const description =
+	"「デジ国｜デジタル時代の国語教育を語ろう」の発信者について。私立中学・高校の国語科教員として、国語教育・ICT・生成AI・探究学習をテーマに発信しています。";
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="page-hero deco-grid">
+		<div class="container">
+			<a class="page-hero__back" href="/">← デジ国トップへ</a>
+			<h1>About</h1>
+			<p class="page-hero__lead">「デジ国」として発信している人について。</p>
+		</div>
+	</div>
+
+	{/* --- プロフィール --- */}
+	<section class="section" aria-labelledby="profile">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="profile">プロフィール</h2>
+			</header>
+
+			<p class="lead-title">Kasahara Satoru</p>
+
+			<div class="prose">
+				<p>
+					私立中学・高校の国語科教員。<br />
+					Google for Education認定イノベーター／コーチ／トレーナー。
+				</p>
+				<p>
+					国語の授業をしながら、国語教育について考えたことを発信しています。
+					ICTや生成AIを授業に持ち込んだときの記録、探究学習の設計、
+					読んだ本のことなど、扱う話題は教室のまわりにあるものが中心です。
+				</p>
+				<p>
+					関心の中心にあるのは、デジタル環境のなかで、
+					ことばを学ぶことがどう変わるのか／変わらないのか、という問いです。
+					答えの出ていないことも、考えている途中のまま言葉にするようにしています。
+				</p>
+				<p>「教育系ポッドキャストの日」を主催しています。</p>
+			</div>
+		</div>
+	</section>
+
+	{/* --- 参考リンク --- */}
+	<section class="section" aria-labelledby="reference">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="reference">参考リンク</h2>
+			</header>
+
+			<ul class="explained-links">
+				<li>
+					論文・発表などの研究業績は
+					<a
+						class="text-link"
+						href={links.researchmap.url}
+						target="_blank"
+						rel="noopener noreferrer"
+					>researchmap</a>にまとめています。
+				</li>
+				<li>
+					Google for Education認定イノベーター／コーチ／トレーナーとしての活動は
+					<a
+						class="text-link"
+						href={links.googleDirectory.url}
+						target="_blank"
+						rel="noopener noreferrer"
+					>Google for Education Directory</a>でご覧いただけます。
+				</li>
+				<li>
+					毎週月曜配信のPodcastは
+					<a class="text-link" href="/podcast/">Podcastのページ</a>から聴けます。
+				</li>
+				<li>
+					毎朝6時半更新のVoicyは
+					<a class="text-link" href="/voicy/">Voicyのページ</a>から聴けます。
+				</li>
+				<li>
+					授業実践や論考は
+					<a class="text-link" href="/note/">noteのページ</a>から読めます。
+				</li>
+				<li>
+					主催している共同企画は
+					<a class="text-link" href="/podcast-day/">教育系ポッドキャストの日</a>のページにあります。
+				</li>
+				<li>
+					日々の告知は
+					<a
+						class="text-link"
+						href={links.x.url}
+						target="_blank"
+						rel="noopener noreferrer"
+					>X</a>、
+					登壇や研修の動画は
+					<a
+						class="text-link"
+						href={links.youtube.url}
+						target="_blank"
+						rel="noopener noreferrer"
+					>YouTube</a>、
+					リンクのまとめは
+					<a
+						class="text-link"
+						href={links.litlink.url}
+						target="_blank"
+						rel="noopener noreferrer"
+					>lit.link</a>にあります。
+				</li>
+				<li>
+					ご連絡は
+					<a class="text-link" href="/contact/">お問い合わせのページ</a>から受け付けています。
+				</li>
+			</ul>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.lead-title {
+		font-size: var(--text-lg);
+		font-weight: 700;
+		color: var(--color-heading);
+		margin-bottom: var(--space-md);
+	}
+
+	/* 「何が見られるリンクなのか」を文で説明したリンク一覧 */
+	.explained-links {
+		display: grid;
+		gap: var(--space-sm);
+		max-width: var(--width-narrow);
+		line-height: var(--leading-normal);
+	}
+</style>

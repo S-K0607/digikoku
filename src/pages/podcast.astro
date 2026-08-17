@@ -1,0 +1,238 @@
+---
+// ==========================================================================
+// Podcastページ（/podcast/）
+//
+// 番組「デジタル時代の国語教育を語ろう」について詳しく紹介するページ。
+//
+// 【最新エピソードは RSS から自動取得しています】
+// 取得元は src/data/site.js の links.podcastRss です。
+// 取得は「サイトをビルドしたとき」に行われます（訪問者側では通信しません）。
+// 取得に失敗してもビルドは止まらず、配信サービスへの案内が表示されます。
+// ==========================================================================
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import EntryRow from "../components/EntryRow.astro";
+import Picture from "../components/Picture.astro";
+import { site, links, artwork } from "../data/site.js";
+import { fetchFeedItems, formatDate } from "../lib/feeds.js";
+
+const title = `Podcast｜${site.name}`;
+const description =
+	"Podcast「デジタル時代の国語教育を語ろう」。国語教育、ICT、生成AI、探究について話す音声番組です。毎週月曜配信。";
+
+// --- エピソードはすべてRSSから取得します -----------------------------------
+// 個別エピソードのURLを手で書かないので、配信プラットフォームのリンクが
+// 混ざることがありません。
+// （stand.fm は「番組のトップページ」へのリンクにだけ使い、
+//   個別エピソードには使いません）
+const allEpisodes = await fetchFeedItems(links.podcastRss.url, 200);
+
+// 最新エピソード。件数を変えたいときは下の 6 を書き換えてください。
+const latestEpisodes = allEpisodes.slice(0, 6);
+
+// --- おすすめエピソード ----------------------------------------------------
+// ここに書くのは「エピソード番号」と「ひとこと」だけです。
+// タイトル・公開日・リンクはRSSから自動で引き当てるので、
+// URLを調べて貼り付ける必要はありません。
+const recommendedPicks = [
+	{
+		number: 100,
+		comment:
+			"2年間100回続けて分かったことと、これから番組をどう作り直していくかを話しました。",
+	},
+	{
+		number: 104,
+		comment:
+			"第2回 教育系ポッドキャストの日の共通テーマ「私の自由研究」に合わせた回。",
+	},
+];
+
+const recommendedEpisodes = recommendedPicks
+	.map(({ number, comment }) => {
+		// 「#100 」で始まるエピソードを探します
+		const episode = allEpisodes.find((item) =>
+			item.title.startsWith(`#${number} `),
+		);
+		if (!episode) return null; // 見つからないときは表示しません
+		return {
+			type: "おすすめ",
+			title: episode.title,
+			date: episode.date,
+			description: comment,
+			url: episode.url,
+			actionLabel: "聴く",
+		};
+	})
+	.filter((episode) => episode !== null);
+
+const podcastServices = [
+	links.podcastSpotify,
+	links.podcastApple,
+	links.podcastAmazon,
+	links.podcastListen,
+	links.podcastStandfm,
+	links.podcastRss,
+];
+---
+
+<BaseLayout title={title} description={description}>
+	<div class="page-hero deco-grid">
+		<div class="container">
+			<a class="page-hero__back" href="/">← デジ国トップへ</a>
+			<h1>Podcast</h1>
+			<p class="page-hero__lead">デジタル時代の国語教育を語ろう</p>
+		</div>
+	</div>
+
+	{/* --- 番組について ＋ アートワーク --- */}
+	<section class="section" aria-labelledby="about-show">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="about-show">番組について</h2>
+			</header>
+
+			<div class="show">
+				<div class="show__body">
+					<p>
+						国語教育におけるICTの活用と、その実践方法を探究する番組です。
+						Google for
+						Education認定イノベーター／コーチ／トレーナーであり
+						国語科教員のKasaharaが、教育現場での取り組みや日常的な実践をお届けします。
+					</p>
+					<p>
+						授業のこと、ことばのこと、生成AIやICTと国語の関わりなど、
+						すぐに答えの出ないテーマをゆっくり扱っています。
+						毎週月曜配信。通勤や家事のあいだに聴いてもらうことを想定しています。
+					</p>
+
+					<div class="link-row show__services">
+						{
+							podcastServices.map((service) =>
+								service.url ? (
+									<a
+										href={service.url}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{service.label}
+									</a>
+								) : (
+									<span class="is-pending">
+										{service.label}（準備中）
+									</span>
+								),
+							)
+						}
+					</div>
+				</div>
+
+				{/* このページではアートワークを主要ビジュアルとして使います */}
+				<div class="show__artwork">
+					<Picture src="/images/podcast-artwork" alt={artwork.alt} />
+				</div>
+			</div>
+		</div>
+	</section>
+
+	{/* --- 最新エピソード --- */}
+	<section class="section" aria-labelledby="latest-episodes">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="latest-episodes">最新のエピソード</h2>
+			</header>
+
+			{
+				latestEpisodes.length > 0 ? (
+					<ul class="title-list">
+						{latestEpisodes.map((episode) => (
+							<li class="title-list__item">
+								<a
+									class="title-list__link"
+									href={episode.url}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									{episode.title}
+								</a>
+								<time
+									class="title-list__date"
+									datetime={episode.date}
+								>
+									{formatDate(episode.date)}
+								</time>
+							</li>
+						))}
+					</ul>
+				) : (
+					<p class="text-muted">
+						エピソード一覧を読み込めませんでした。上の配信サービスからお聴きください。
+					</p>
+				)
+			}
+		</div>
+	</section>
+
+	{/* --- おすすめエピソード --- */}
+	<section class="section" aria-labelledby="recommended-episodes">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="recommended-episodes">おすすめ</h2>
+			</header>
+
+			<p class="section-lead">
+				はじめて聴く方に向けて選んだ回を並べています。
+			</p>
+
+			{
+				recommendedEpisodes.length > 0 ? (
+					<div class="entry-list">
+						{recommendedEpisodes.map((episode) => (
+							<EntryRow {...episode} />
+						))}
+					</div>
+				) : (
+					<p class="text-muted">
+						おすすめの回を読み込めませんでした。上の配信サービスからお聴きください。
+					</p>
+				)
+			}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.show {
+		display: grid;
+		grid-template-columns: 1fr 320px;
+		gap: var(--space-2xl);
+		align-items: start;
+	}
+
+	.show__body p + p {
+		margin-top: var(--space-md);
+	}
+
+	.show__services {
+		margin-top: var(--space-xl);
+	}
+
+	.show__artwork {
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+	}
+
+	.entry-list {
+		border-top: 1px solid var(--color-border);
+	}
+
+	@media (max-width: 860px) {
+		.show {
+			grid-template-columns: 1fr;
+			gap: var(--space-xl);
+		}
+
+		.show__artwork {
+			max-width: 320px;
+		}
+	}
+</style>

@@ -1,0 +1,48 @@
+---
+// ==========================================================================
+// Picture.astro
+// 画像を表示する部品。
+//
+// 画像はWebP形式だけを置いています。
+// WebPは現在のブラウザすべてが対応しているため、PNGの予備は用意していません
+// （容量を小さく保つためです）。
+//
+// 使い方（拡張子は書きません）:
+//   <Picture src="/images/podcast-artwork" alt="説明文" eager={true} />
+//
+// 受け取る値（props）:
+//   src   … 拡張子を除いた画像パス（public/images/ 以下に .webp を置きます）
+//   alt   … 画像の説明。装飾目的の画像なら "" を渡す
+//   eager … true なら最優先で読み込む（画面最上部の画像用）
+//   size  … 画像の縦横ピクセル数（正方形を想定。既定は900）
+// ==========================================================================
+
+const { src, alt = "", eager = false, size = 900 } = Astro.props;
+---
+
+<img
+	src={`${src}.webp`}
+	alt={alt}
+	width={size}
+	height={size}
+	decoding="async"
+	loading={eager ? "eager" : "lazy"}
+	fetchpriority={eager ? "high" : undefined}
+/>
+
+<style>
+	/* 【重要】画像の大きさはこの中で決めます。
+	   Astroの「スコープ付きCSS」の仕組み上、この <img> に対しては
+	   呼び出し元のページに書いた `.xxx img { ... }` は効きません。
+	   そのため、幅を親要素に合わせる指定はここに置く必要があります。
+	   （これが無いと、画像が元の900pxのまま表示されてはみ出します）
+
+	   枠線・角丸は、呼び出し元が外側の <div> に付けたものを
+	   border-radius: inherit で引き継ぎます。 */
+	img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: inherit;
+	}
+</style>

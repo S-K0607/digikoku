@@ -1,0 +1,80 @@
+---
+// ==========================================================================
+// BaseLayout.astro
+// すべてのページの「外枠」です。
+//   <head>（title / description など） + Header + 本文 + Footer
+// 各ページはこのレイアウトで中身を包むだけでよくなります。
+//
+// 使い方（各ページ側）:
+//   <BaseLayout title="Podcast｜デジ国" description="...">
+//     ここにページの中身
+//   </BaseLayout>
+// ==========================================================================
+
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { site } from "../data/site.js";
+import "../styles/global.css";
+
+const {
+	// ページごとの <title>。指定しなければサイト名を使います。
+	title = site.title,
+	// ページごとの meta description。
+	description = site.description,
+} = Astro.props;
+
+// このページの正式なURL（絶対URL）を組み立てます。
+//   例： https://digikoku.com/podcast/
+// astro.config.mjs の site を書き換えれば、ここも自動で追従します。
+const canonicalUrl = Astro.site
+	? new URL(Astro.url.pathname, Astro.site).href
+	: undefined;
+---
+
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="generator" content={Astro.generator} />
+
+		<title>{title}</title>
+		<meta name="description" content={description} />
+
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+
+		{/* このページの正式なURL。検索エンジンに「重複ではない」と伝えます */}
+		{canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+		{/* --- OGP（SNSでシェアされたときの表示） --------------------------- */}
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={site.title} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:locale" content="ja_JP" />
+		{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+		{/* --- og:image（SNSでのサムネイル画像）-------------------------------
+		    どの画像を使うかが未決定のため、まだ有効にしていません。
+		    Podcastアートワークをそのまま使うなら、下の2行のコメントを外すだけです。
+		    （専用画像を作る場合は、public/images/ に置いてパスを差し替えます）
+
+		    <meta property="og:image" content={new URL("/images/podcast-artwork.png", Astro.site).href} />
+		    <meta name="twitter:card" content="summary_large_image" />
+		--------------------------------------------------------------------- */}
+	</head>
+
+	<body>
+		{/* キーボード利用者が長いナビを飛ばして本文へ行けるリンク */}
+		<a class="skip-link" href="#main">本文へスキップ</a>
+
+		<Header />
+
+		<main id="main">
+			<slot />
+		</main>
+
+		<Footer />
+	</body>
+</html>
