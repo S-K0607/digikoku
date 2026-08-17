@@ -29,3 +29,4 @@ pnpm-debug.log*
 
 # ローカル専用の運用・引継ぎファイル
 HANDOVER.md
+AGENTS.md
