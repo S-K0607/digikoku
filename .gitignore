@@ -24,9 +24,11 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
-# jetbrains setting folder
+# editor / IDE setting folders
 .idea/
+.vscode/
 
-# ローカル専用の運用・引継ぎファイル
+# ローカル専用の運用・引継ぎ・AI設定ファイル
 HANDOVER.md
 AGENTS.md
+CLAUDE.md
