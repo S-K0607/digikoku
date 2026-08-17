@@ -2,10 +2,7 @@
 // scripts/build.mjs  ―  `npm run build` から呼ばれるビルド用スクリプト
 //
 // 【なぜこのスクリプトが必要か】
-// このプロジェクトのフォルダは
-//   C:\Users\music\OneDrive\2.ドキュメント\podcast-site\podcast-site
-// という、日本語（ドキュメント）を含むパスにあります。
-//
+// Windows環境でプロジェクトが日本語を含むパス（例: 日本語フォルダ名など）にある場合、
 // Astro が内部で使うバンドラー（Rolldown／Rust製）は、Windows で
 // 日本語を含むパスを処理できず、エラーメッセージも出さずに異常終了します。
 // そのため `astro build` がそのままでは失敗します。
@@ -25,7 +22,7 @@
 //   ・vite の resolve.preserveSymlinks を有効にする
 //       → 同じくCSSが出力されない
 //   ・Node の fs.cpSync でコピー
-//       → OneDrive配下のフォルダで異常終了する。そのため robocopy を使用
+//       → 同期フォルダ配下等で異常終了することがある。そのため robocopy を使用
 //
 // 【GitHub Actions（Linux）で動かす場合】
 // 回避処理は Windows のときだけ動きます。Linux では下の分岐で
