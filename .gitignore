@@ -26,3 +26,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# ローカル専用の運用・引継ぎファイル
+HANDOVER.md
