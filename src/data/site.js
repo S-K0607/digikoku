@@ -64,6 +64,12 @@ export const links = {
 		label: "RSS",
 		url: "https://anchor.fm/s/106b07834/podcast/rss",
 	},
+	// Podyは「聴く場所」ではなく、エピソードを検索したり記事を読んだりしながら
+	// たどるための入口です。上の配信サービス一覧とは分けて案内しています。
+	podcastPody: {
+		label: "Podyで番組を見る",
+		url: "https://pody.jp/player/G9xsfgAIbg9uxBh5cFZz",
+	},
 
 	// --- Voicy「デジタル時代の国語教育ラジオ」 ---
 	voicy: {

@@ -124,6 +124,25 @@ const podcastServices = [
 							)
 						}
 					</div>
+
+					{/* Podyは聴く場所ではなく、文字でたどる入口なので、上の一覧とは分けています */}
+					<div class="show__pody">
+						<h3 class="subheading">音声を文字でもたどる</h3>
+						<p>
+							Podyでは、エピソードを検索して探せます。
+							記事が付いている回は、内容を文字でも読めます。
+						</p>
+
+						<div class="link-row">
+							<a
+								href={links.podcastPody.url}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{links.podcastPody.label}
+							</a>
+						</div>
+					</div>
 				</div>
 
 				{/* このページではアートワークを主要ビジュアルとして使います */}
@@ -214,6 +233,14 @@ const podcastServices = [
 
 	.show__services {
 		margin-top: var(--space-xl);
+	}
+
+	.show__pody {
+		margin-top: var(--space-xl);
+	}
+
+	.show__pody .link-row {
+		margin-top: var(--space-md);
 	}
 
 	.show__artwork {
