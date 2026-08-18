@@ -7,12 +7,15 @@
 // 放送を追加・入れ替えするときは、タイトルとURLを書き換えるだけです。
 // 件数が増えても、一覧がそのまま下へ伸びます。
 //
-// 「過去の放送から探す」のランダム表示だけは、これまでの放送をまとめた
-// src/data/voicyEpisodes.json を、ページ下部のスクリプトから読んでいます。
+// 「バックナンバーから一本」だけは、これまでの放送をまとめた
+// src/data/voicyEpisodes.json を読んでいます。
+// 本数と開始月はビルドのたびに数え直すので、JSONに追記すれば表示も新しくなります。
 // ==========================================================================
 
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { site, links } from "../data/site.js";
+import episodes from "../data/voicyEpisodes.json";
+import { isShort } from "../lib/voicy.js";
 
 const title = `Voicy｜${site.name}`;
 const description =
@@ -69,6 +72,17 @@ const genrePicks = [
 		],
 	},
 ];
+
+// --- バックナンバーから一本（ランダム表示）--------------------------------
+// 数字は手で書かず、JSONから毎回数え直します。
+const episodeCount = episodes.length;
+const shortEpisodeCount = episodes.filter(isShort).length;
+
+// いちばん古い放送の年月。日付順に並んでいるとは限らないので、最小のものを探します。
+const firstEpisode = episodes.reduce((oldest, episode) =>
+	new Date(episode.date) < new Date(oldest.date) ? episode : oldest
+);
+const [startYear, startMonth] = firstEpisode.date.split("/");
 ---
 
 <BaseLayout title={title} description={description}>
@@ -100,6 +114,10 @@ const genrePicks = [
 					まとまった論考は<a href="/note/">note</a>に、
 					じっくりした対話は<a href="/podcast/">Podcast</a>に置き、
 					Voicyはその手前にある「考えている途中」を話す場にしています。
+				</p>
+				<p>
+					どれを聴くか迷ったら、<a href="#voicy-pick">バックナンバーから一本</a>
+					選ぶこともできます。
 				</p>
 			</div>
 
@@ -168,28 +186,51 @@ const genrePicks = [
 		</div>
 	</section>
 
-	{/* --- 過去の放送から探す --- */}
+	{/* --- バックナンバーから一本 --- */}
 	<section class="section" aria-labelledby="voicy-pick">
 		<div class="container">
 			<header class="section-heading">
-				<h2 id="voicy-pick">過去の放送から探す</h2>
+				<h2 id="voicy-pick">バックナンバーから一本</h2>
 			</header>
 
-			<p class="section-lead">これまでの放送から、気になる一本を選びます。</p>
+			<p class="section-lead">
+				{startYear}年{startMonth}月から毎朝続けてきた放送が、いま{episodeCount}本あります。
+				ボタンを押すと、その中から一本を選びます。
+			</p>
 
+			{/* ボタンの下の一行は、押す前に何が起きるか分かるようにするためのものです */}
 			<div class="pick__controls">
-				<button class="pick__button" type="button" data-pick-pool="all">
-					一本選んでもらう
-				</button>
-				<button class="pick__button" type="button" data-pick-pool="short">
-					10分以内から選ぶ
-				</button>
+				<div class="pick__choice">
+					<button
+						class="pick__button"
+						type="button"
+						data-pick-pool="all"
+						aria-describedby="pick-hint-all"
+					>
+						一本選んでもらう
+					</button>
+					<p class="pick__hint" id="pick-hint-all">これまでの放送すべてから選びます</p>
+				</div>
+
+				<div class="pick__choice">
+					<button
+						class="pick__button"
+						type="button"
+						data-pick-pool="short"
+						aria-describedby="pick-hint-short"
+					>
+						10分以内から選ぶ
+					</button>
+					<p class="pick__hint" id="pick-hint-short">
+						10分以内の{shortEpisodeCount}本から選びます
+					</p>
+				</div>
 			</div>
 
 			{/* 抽選結果。中身はページ下部のスクリプトが書き換えます */}
 			<div class="pick__result" aria-live="polite">
 				<p class="pick__placeholder" id="pick-placeholder">
-					ボタンを押すと、過去の放送から一本選びます。
+					選ばれた放送は、ここに表示されます。もう一度押すと、別の放送に変わります。
 				</p>
 
 				<div class="pick__episode" id="pick-episode" hidden>
@@ -212,6 +253,14 @@ const genrePicks = [
 					</p>
 				</div>
 			</div>
+
+			<p class="pick__follow">気に入った放送があれば、Voicyでフォローを。毎朝6時半に配信しています。</p>
+
+			<div class="link-row">
+				<a href={links.voicy.url} target="_blank" rel="noopener noreferrer">
+					Voicyでフォローする
+				</a>
+			</div>
 		</div>
 	</section>
 </BaseLayout>
@@ -225,14 +274,28 @@ const genrePicks = [
 		margin-top: var(--space-2xl);
 	}
 
-	/* --- 過去の放送から探す --------------------------------------------
+	/* --- バックナンバーから一本 ------------------------------------------
 	   Heroの .button は使わず、本文に馴染む小さな操作ボタンにします。
 	   結果はカードにせず、1本の罫線と余白だけで区切ります。 */
 
 	.pick__controls {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-sm);
+		gap: var(--space-sm) var(--space-xl);
+	}
+
+	/* ボタンと、その下の小さな説明を1組にします */
+	.pick__choice {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2xs);
+	}
+
+	.pick__hint {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		line-height: 1.6;
 	}
 
 	.pick__button {
@@ -295,6 +358,15 @@ const genrePicks = [
 		margin-top: var(--space-md);
 	}
 
+	.pick__follow {
+		margin-top: var(--space-2xl);
+		font-size: var(--text-sm);
+	}
+
+	.pick__follow + .link-row {
+		margin-top: var(--space-sm);
+	}
+
 	/* 狭い画面では、2つのボタンを縦に積みます */
 	@media (max-width: 480px) {
 		.pick__controls {
@@ -316,7 +388,7 @@ const genrePicks = [
 
 <script>
 	// ==========================================================================
-	// 「過去の放送から探す」の抽選
+	// 「バックナンバーから一本」の抽選
 	//
 	// これまでの放送は src/data/voicyEpisodes.json にまとめてあります。
 	// 放送が増えたときは、そのJSONに追記するだけで、ここは触らなくて済みます。
@@ -324,11 +396,7 @@ const genrePicks = [
 	// ==========================================================================
 
 	import episodes from "../data/voicyEpisodes.json";
-
-	/** "0:10:14" のような放送尺を秒数に直す */
-	function toSeconds(duration) {
-		return duration.split(":").reduce((total, part) => total * 60 + Number(part), 0);
-	}
+	import { isShort } from "../lib/voicy.js";
 
 	/** "0:10:14" → "10分14秒" */
 	function formatDuration(duration) {
@@ -347,8 +415,8 @@ const genrePicks = [
 		};
 	}
 
-	// 10分以内かどうかは、文字列ではなく秒数（600秒以下）で判定します
-	const shortEpisodes = episodes.filter((episode) => toSeconds(episode.duration) <= 600);
+	// 10分以内かどうかの判定（600秒以下）は src/lib/voicy.js にまとめてあります
+	const shortEpisodes = episodes.filter(isShort);
 
 	const pools = {
 		all: { items: episodes, label: `全${episodes.length}本から` },
