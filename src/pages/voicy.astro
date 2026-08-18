@@ -6,6 +6,9 @@
 // 紹介する放送は下の配列に手で書いています。
 // 放送を追加・入れ替えするときは、タイトルとURLを書き換えるだけです。
 // 件数が増えても、一覧がそのまま下へ伸びます。
+//
+// 「過去の放送から探す」のランダム表示だけは、これまでの放送をまとめた
+// src/data/voicyEpisodes.json を、ページ下部のスクリプトから読んでいます。
 // ==========================================================================
 
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -164,6 +167,53 @@ const genrePicks = [
 			}
 		</div>
 	</section>
+
+	{/* --- 過去の放送から探す --- */}
+	<section class="section" aria-labelledby="voicy-pick">
+		<div class="container">
+			<header class="section-heading">
+				<h2 id="voicy-pick">過去の放送から探す</h2>
+			</header>
+
+			<p class="section-lead">これまでの放送から、気になる一本を選びます。</p>
+
+			<div class="pick__controls">
+				<button class="pick__button" type="button" data-pick-pool="all">
+					一本選んでもらう
+				</button>
+				<button class="pick__button" type="button" data-pick-pool="short">
+					10分以内から選ぶ
+				</button>
+			</div>
+
+			{/* 抽選結果。中身はページ下部のスクリプトが書き換えます */}
+			<div class="pick__result" aria-live="polite">
+				<p class="pick__placeholder" id="pick-placeholder">
+					ボタンを押すと、過去の放送から一本選びます。
+				</p>
+
+				<div class="pick__episode" id="pick-episode" hidden>
+					<p class="pick__source" id="pick-source"></p>
+					<p class="pick__title" id="pick-title"></p>
+					<p class="pick__meta">
+						<time id="pick-date"></time>
+						<span id="pick-duration"></span>
+					</p>
+					<p class="pick__link">
+						<a
+							class="text-link"
+							id="pick-link"
+							href="https://voicy.jp/channel/893814"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Voicyで聴く
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+	</section>
 </BaseLayout>
 
 <style>
@@ -174,4 +224,183 @@ const genrePicks = [
 	.genre + .genre {
 		margin-top: var(--space-2xl);
 	}
+
+	/* --- 過去の放送から探す --------------------------------------------
+	   Heroの .button は使わず、本文に馴染む小さな操作ボタンにします。
+	   結果はカードにせず、1本の罫線と余白だけで区切ります。 */
+
+	.pick__controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+	}
+
+	.pick__button {
+		padding: 0.55em 1.2em;
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-sm);
+		background-color: transparent;
+		color: var(--color-heading);
+		font-size: var(--text-sm);
+		font-weight: 700;
+		line-height: 1.6;
+	}
+
+	.pick__button:hover {
+		border-color: var(--color-text-muted);
+		color: var(--color-link-hover);
+	}
+
+	.pick__result {
+		max-width: var(--width-narrow);
+		margin-top: var(--space-xl);
+		padding-top: var(--space-lg);
+		border-top: 1px solid var(--color-border);
+	}
+
+	.pick__placeholder {
+		font-size: var(--text-sm);
+		color: var(--color-text-muted);
+	}
+
+	/* どちらのボタンで選んだのかを、色ではなく言葉で示します */
+	.pick__source {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		letter-spacing: 0.04em;
+	}
+
+	.pick__title {
+		margin-top: var(--space-2xs);
+		font-size: var(--text-lg);
+		font-weight: 700;
+		color: var(--color-heading);
+		line-height: var(--leading-tight);
+		/* 長いタイトルでも画面からはみ出させない */
+		overflow-wrap: anywhere;
+	}
+
+	.pick__meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2xs) var(--space-md);
+		margin-top: var(--space-xs);
+		font-size: var(--text-sm);
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* リンクの見た目は global.css の .text-link に任せます */
+	.pick__link {
+		margin-top: var(--space-md);
+	}
+
+	/* 狭い画面では、2つのボタンを縦に積みます */
+	@media (max-width: 480px) {
+		.pick__controls {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.pick__button {
+			padding-block: 0.7em;
+		}
+
+		/* 指で押しやすいように、リンクの当たりを少し広げます */
+		.pick__link a {
+			display: inline-block;
+			padding-block: var(--space-2xs);
+		}
+	}
 </style>
+
+<script>
+	// ==========================================================================
+	// 「過去の放送から探す」の抽選
+	//
+	// これまでの放送は src/data/voicyEpisodes.json にまとめてあります。
+	// 放送が増えたときは、そのJSONに追記するだけで、ここは触らなくて済みます。
+	// 通信はしません（JSONはビルドのときに読み込まれます）。
+	// ==========================================================================
+
+	import episodes from "../data/voicyEpisodes.json";
+
+	/** "0:10:14" のような放送尺を秒数に直す */
+	function toSeconds(duration) {
+		return duration.split(":").reduce((total, part) => total * 60 + Number(part), 0);
+	}
+
+	/** "0:10:14" → "10分14秒" */
+	function formatDuration(duration) {
+		const [hours, minutes, seconds] = duration.split(":");
+
+		return (Number(hours) > 0 ? `${Number(hours)}時間` : "") + `${Number(minutes)}分${seconds}秒`;
+	}
+
+	/** "2026/8/17" → 表示用の "2026.8.17" と、time要素に入れる "2026-08-17" */
+	function formatDate(date) {
+		const [year, month, day] = date.split("/");
+
+		return {
+			text: `${year}.${month}.${day}`,
+			datetime: `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`,
+		};
+	}
+
+	// 10分以内かどうかは、文字列ではなく秒数（600秒以下）で判定します
+	const shortEpisodes = episodes.filter((episode) => toSeconds(episode.duration) <= 600);
+
+	const pools = {
+		all: { items: episodes, label: `全${episodes.length}本から` },
+		short: { items: shortEpisodes, label: `10分以内の放送${shortEpisodes.length}本から` },
+	};
+
+	const placeholder = document.getElementById("pick-placeholder");
+	const box = document.getElementById("pick-episode");
+	const sourceText = document.getElementById("pick-source");
+	const titleText = document.getElementById("pick-title");
+	const dateText = document.getElementById("pick-date");
+	const durationText = document.getElementById("pick-duration");
+	const link = document.getElementById("pick-link");
+
+	// 直前に出した放送。同じものが続けて出ないようにするためだけに使います
+	let lastUrl = "";
+
+	function draw(items) {
+		let episode = items[Math.floor(Math.random() * items.length)];
+
+		while (items.length > 1 && episode.url === lastUrl) {
+			episode = items[Math.floor(Math.random() * items.length)];
+		}
+
+		lastUrl = episode.url;
+		return episode;
+	}
+
+	function show(poolName) {
+		const pool = pools[poolName];
+		if (!pool || pool.items.length === 0) return;
+
+		const episode = draw(pool.items);
+		const date = formatDate(episode.date);
+
+		sourceText.textContent = pool.label;
+		titleText.textContent = episode.title;
+		dateText.textContent = date.text;
+		dateText.setAttribute("datetime", date.datetime);
+		durationText.textContent = formatDuration(episode.duration);
+		link.setAttribute("href", episode.url);
+
+		// 最初の案内文と入れ替えて、選ばれた放送を出します
+		placeholder.setAttribute("hidden", "");
+		box.removeAttribute("hidden");
+	}
+
+	if (placeholder && box && sourceText && titleText && dateText && durationText && link) {
+		document.querySelectorAll("[data-pick-pool]").forEach((button) => {
+			button.addEventListener("click", () => {
+				show(button.dataset.pickPool);
+			});
+		});
+	}
+</script>
