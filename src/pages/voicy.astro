@@ -7,15 +7,16 @@
 // 放送を追加・入れ替えするときは、タイトルとURLを書き換えるだけです。
 // 件数が増えても、一覧がそのまま下へ伸びます。
 //
-// 「バックナンバーから一本」だけは、これまでの放送をまとめた
+// 「最新の放送」と「バックナンバーから一本」は、これまでの放送をまとめた
 // src/data/voicyEpisodes.json を読んでいます。
+// JSONは新しい放送が先頭に来る並びで運用しているので、先頭の1件が最新です。
 // 本数と開始月はビルドのたびに数え直すので、JSONに追記すれば表示も新しくなります。
 // ==========================================================================
 
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { site, links } from "../data/site.js";
 import episodes from "../data/voicyEpisodes.json";
-import { isShort } from "../lib/voicy.js";
+import { formatDate, isShort } from "../lib/voicy.js";
 
 const title = `Voicy｜${site.name}`;
 const description =
@@ -73,6 +74,11 @@ const genrePicks = [
 	},
 ];
 
+// --- 最新の放送 ------------------------------------------------------------
+// JSONの先頭が最新の放送です。JSONが空のときは、この欄を出しません。
+const latestEpisode = episodes[0];
+const latestDate = latestEpisode ? formatDate(latestEpisode.date) : null;
+
 // --- バックナンバーから一本（ランダム表示）--------------------------------
 // 数字は手で書かず、JSONから毎回数え直します。
 const episodeCount = episodes.length;
@@ -120,6 +126,30 @@ const [startYear, startMonth] = firstEpisode.date.split("/");
 					選ぶこともできます。
 				</p>
 			</div>
+
+			{
+				latestEpisode && (
+					<div class="latest">
+						<h3 class="subheading">最新の放送</h3>
+
+						<ul class="title-list">
+							<li class="title-list__item">
+								<a
+									class="title-list__link"
+									href={latestEpisode.url}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									{latestEpisode.title}
+								</a>
+								<time class="title-list__date" datetime={latestDate.datetime}>
+									{latestDate.text}
+								</time>
+							</li>
+						</ul>
+					</div>
+				)
+			}
 
 			<div class="link-row voicy-links">
 				<a href={links.voicy.url} target="_blank" rel="noopener noreferrer">
@@ -266,6 +296,10 @@ const [startYear, startMonth] = firstEpisode.date.split("/");
 </BaseLayout>
 
 <style>
+	.latest {
+		margin-top: var(--space-2xl);
+	}
+
 	.voicy-links {
 		margin-top: var(--space-xl);
 	}
@@ -396,23 +430,13 @@ const [startYear, startMonth] = firstEpisode.date.split("/");
 	// ==========================================================================
 
 	import episodes from "../data/voicyEpisodes.json";
-	import { isShort } from "../lib/voicy.js";
+	import { formatDate, isShort } from "../lib/voicy.js";
 
 	/** "0:10:14" → "10分14秒" */
 	function formatDuration(duration) {
 		const [hours, minutes, seconds] = duration.split(":");
 
 		return (Number(hours) > 0 ? `${Number(hours)}時間` : "") + `${Number(minutes)}分${seconds}秒`;
-	}
-
-	/** "2026/8/17" → 表示用の "2026.8.17" と、time要素に入れる "2026-08-17" */
-	function formatDate(date) {
-		const [year, month, day] = date.split("/");
-
-		return {
-			text: `${year}.${month}.${day}`,
-			datetime: `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`,
-		};
 	}
 
 	// 10分以内かどうかの判定（600秒以下）は src/lib/voicy.js にまとめてあります

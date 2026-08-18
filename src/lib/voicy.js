@@ -17,6 +17,19 @@ export function toSeconds(duration) {
 	return duration.split(":").reduce((total, part) => total * 60 + Number(part), 0);
 }
 
+/**
+ * 放送日を、画面に出す形と <time> のdatetime属性に入れる形の2通りに整える
+ * 例: "2026/8/18" → { text: "2026.8.18", datetime: "2026-08-18" }
+ */
+export function formatDate(date) {
+	const [year, month, day] = date.split("/");
+
+	return {
+		text: `${year}.${month}.${day}`,
+		datetime: `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`,
+	};
+}
+
 /** 10分以内の放送かどうか */
 export function isShort(episode) {
 	return toSeconds(episode.duration) <= SHORT_LIMIT_SECONDS;
