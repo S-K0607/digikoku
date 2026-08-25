@@ -55,23 +55,62 @@ function toPlainText(html, maxLength = 90) {
 	return text.slice(0, maxLength).trimEnd() + "…";
 }
 
+// このサイトは日本向けなので、日付はすべて日本時間（Asia/Tokyo）の暦日で扱います。
+// toISOString() を使うとUTCに変換されてしまい、
+//   2026-08-24 06:00 JST → 2026-08-23 21:00 UTC → "2026-08-23"
+// のように、早朝配信が前日として表示されてしまいます。
+// そのため Intl.DateTimeFormat で「日本ではその瞬間が何月何日か」を取り出します。
+const TOKYO_DATE_PARTS = new Intl.DateTimeFormat("en-US", {
+	timeZone: "Asia/Tokyo",
+	year: "numeric",
+	month: "2-digit",
+	day: "2-digit",
+});
+
+/** "2026-08-16" の形かどうか */
+const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 /**
- * 日付を "2026-08-16" の形にそろえる
+ * 日付を、日本時間の暦日として "2026-08-16" の形にそろえる
+ *
+ * RSSのpubDate（例: "Mon, 24 Aug 2026 06:00:00 +0900"）は
+ * タイムゾーン付きなので、new Date() でその「瞬間」を正しく取り出せます。
+ * あとはその瞬間を日本時間で見たときの年月日に直します。
  */
 function toIsoDate(pubDate) {
 	if (!pubDate) return null;
 	const parsed = new Date(decodeText(pubDate));
 	if (Number.isNaN(parsed.getTime())) return null;
-	return parsed.toISOString().slice(0, 10);
+
+	// formatToParts で年・月・日を別々に受け取る（並び順に左右されない）
+	const parts = {};
+	for (const { type, value } of TOKYO_DATE_PARTS.formatToParts(parsed)) {
+		parts[type] = value;
+	}
+	if (!parts.year || !parts.month || !parts.day) return null;
+
+	return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
 /**
  * 画面に出す日付の表記をそろえる
  *   "2026-08-16" → "2026.08.16"
  * 紙面らしく点でそろえた表記にします。
+ *
+ * "2026-08-16" 形式のときは new Date() を通しません。
+ * new Date("2026-08-16") はUTCの0時と解釈され、
+ * ビルドする場所によっては前日にずれてしまうためです。
  */
 export function formatDate(value) {
 	if (!value) return null;
+
+	const matched = String(value).match(ISO_DATE_PATTERN);
+	if (matched) {
+		const [, year, month, day] = matched;
+		return `${year}.${month}.${day}`;
+	}
+
+	// 念のため、それ以外の形式もこれまでどおり受け付ける
 	const parsed = new Date(value);
 	if (Number.isNaN(parsed.getTime())) return value;
 	const month = String(parsed.getMonth() + 1).padStart(2, "0");
