@@ -27,21 +27,31 @@ const description =
 // public/images/podcast-day/ に .webp と .png の両方を置いてください。
 // （元の大きな画像は assets/podcast-day-original/ に保管してあります）
 const latestEdition = {
-	number: "第3回",
+	number: "第4回",
 	name: "教育系ポッドキャストの日",
-	theme: "「宿題」",
-	period: "2026年8月24日（月）〜 8月30日（日）",
-	summary:
-		"8月下旬といえば、やっぱり「宿題」。子どもの頃に泣かされっぱなしだった思い出話はもちろん、大人になった今、自分へ課して楽しんでいる探究やこだわりについても広く募集します。",
-	keyVisual: "/images/podcast-day/kyouikupod3",
-	keyVisualAlt:
-		"第3回 教育系ポッドキャストの日のキービジュアル。共通テーマ「宿題」、開催期間2026年8月24日（月）〜8月30日（日）。",
+	theme: null, // 決まったら「「〇〇」」の形で入れてください
+	period: null, // 決まったら「2026年〇月〇日（月）〜 〇月〇日（日）」の形で入れてください
+	summary: null, // テーマの紹介文。決まったら入れてください
+	keyVisual: null, // public/images/podcast-day/kyouikupod4 を置いたらパスを入れてください
+	keyVisualAlt: null,
 	playlist: null, // 開催後にプレイリストのURLを入れてください
 };
+
+// テーマが未定の間は「Coming soon」表示になります
+const isComingSoon = !latestEdition.theme;
 
 // --- 過去の開催 ------------------------------------------------------------
 // 開催回が増えたら、この配列の先頭に1件足してください。
 const pastEditions = [
+	{
+		number: "第3回",
+		theme: "「宿題」",
+		period: "2026年8月24日（月）〜 8月30日（日）",
+		keyVisual: "/images/podcast-day/kyouikupod3",
+		keyVisualAlt:
+			"第3回 教育系ポッドキャストの日のキービジュアル。共通テーマ「宿題」、開催期間2026年8月24日（月）〜8月30日（日）。",
+		playlist: "https://open.spotify.com/playlist/0KE6XAsMi0AItdaQvTUQ46",
+	},
 	{
 		number: "第2回",
 		theme: "「私の自由研究」",
@@ -115,9 +125,9 @@ const pastEditions = [
 							<div
 								class="visual-placeholder"
 								role="img"
-								aria-label="開催回のキービジュアル（未設定）"
+								aria-label="次回のキービジュアル（準備中）"
 							>
-								<span>キービジュアル未設定</span>
+								<span>Coming soon</span>
 							</div>
 						)
 					}
@@ -125,10 +135,22 @@ const pastEditions = [
 
 				<div class="edition__body">
 					<h3 class="edition__number">{latestEdition.number}</h3>
-					<p class="edition__theme">共通テーマ{latestEdition.theme}</p>
-					<p class="edition__period">{latestEdition.period}</p>
-
-					<p class="edition__text">{latestEdition.summary}</p>
+					{
+						isComingSoon ? (
+							<>
+								<p class="edition__theme">Coming soon</p>
+								<p class="edition__text">
+									次回の共通テーマと開催期間は、決まり次第このページとXでお知らせします。
+								</p>
+							</>
+						) : (
+							<>
+								<p class="edition__theme">共通テーマ{latestEdition.theme}</p>
+								<p class="edition__period">{latestEdition.period}</p>
+								<p class="edition__text">{latestEdition.summary}</p>
+							</>
+						)
+					}
 
 					<div class="link-row edition__links">
 						<a href="#join">参加する</a>
