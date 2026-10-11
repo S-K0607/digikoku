@@ -29,16 +29,36 @@ const description =
 const latestEdition = {
 	number: "第4回",
 	name: "教育系ポッドキャストの日",
-	theme: null, // 決まったら「「〇〇」」の形で入れてください
-	period: null, // 決まったら「2026年〇月〇日（月）〜 〇月〇日（日）」の形で入れてください
-	summary: null, // テーマの紹介文。決まったら入れてください
-	keyVisual: null, // public/images/podcast-day/kyouikupod4 を置いたらパスを入れてください
-	keyVisualAlt: null,
+	theme: "「苦手克服！」",
+	period: "2026年10月26日（月）〜 11月1日（日）",
+	// 開催期間を「年-月-日」で。見出しの「次回開催／開催中」の切り替えに使います
+	startDate: "2026-10-26",
+	endDate: "2026-11-01",
+	// テーマの紹介文。画像の横に収まるよう、100字前後にまとめます
+	summary:
+		"大人も、子どもも、受験生も。誰にだってある「どうしても苦手なこと」を、どう乗り越えたか、どう折り合いをつけてきたか。克服した話はもちろん、今まさに格闘中の話や受験生へのエールも大歓迎です。",
+	// テーマのきっかけになった配信回。なければ null
+	origin: {
+		program: "『教育をざっくばらんに語るラジオ』",
+		episode: "No.186「苦手教科との向き合い方」をざっくばらんに語る",
+		url: "https://open.spotify.com/episode/4M8Mlhv4G37bgcDc8GReeY",
+	},
+	keyVisual: "/images/podcast-day/kyouikupod4",
+	keyVisualAlt:
+		"第4回 教育系ポッドキャストの日のキービジュアル。共通テーマ「苦手克服！」、開催期間2026年10月26日（月）〜11月1日（日）。",
 	playlist: null, // 開催後にプレイリストのURLを入れてください
 };
 
 // テーマが未定の間は「Coming soon」表示になります
 const isComingSoon = !latestEdition.theme;
+
+// 見出しを、ビルドした日（日本時間）に合わせて切り替えます。
+// サイトは毎朝自動でビルドし直されるので、手で書き換える必要はありません。
+//   開催前 … 次回開催 ／ 開催期間中 … 開催中 ／ 終了後 … 最新の開催
+const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" }); // 例: 2026-10-26
+let latestHeading = "次回開催";
+if (latestEdition.startDate && today >= latestEdition.startDate) latestHeading = "開催中";
+if (latestEdition.endDate && today > latestEdition.endDate) latestHeading = "最新の開催";
 
 // --- 過去の開催 ------------------------------------------------------------
 // 開催回が増えたら、この配列の先頭に1件足してください。
@@ -112,7 +132,7 @@ const pastEditions = [
 	<section class="section" aria-labelledby="latest-edition">
 		<div class="container">
 			<header class="section-heading">
-				<h2 id="latest-edition">次回開催</h2>
+				<h2 id="latest-edition">{latestHeading}</h2>
 			</header>
 
 			<article class="edition">
@@ -148,11 +168,27 @@ const pastEditions = [
 								<p class="edition__theme">共通テーマ{latestEdition.theme}</p>
 								<p class="edition__period">{latestEdition.period}</p>
 								<p class="edition__text">{latestEdition.summary}</p>
+								{latestEdition.origin && (
+									<p class="edition__origin">
+										{/* 日本語の途中に空白が入らないよう、リンクの前後は改行せずに続けています */}
+										今回のテーマは、{latestEdition.origin.program}の<a
+											class="text-link"
+											href={latestEdition.origin.url}
+											target="_blank"
+											rel="noopener noreferrer"
+										>{latestEdition.origin.episode}</a>でのご提案から生まれました。
+									</p>
+								)}
 							</>
 						)
 					}
 
 					<div class="link-row edition__links">
+						{latestEdition.playlist && (
+							<a href={latestEdition.playlist} target="_blank" rel="noopener noreferrer">
+								この回のプレイリストを聴く（Spotify）
+							</a>
+						)}
 						<a href="#join">参加する</a>
 						<a href="#archive">過去の開催</a>
 					</div>
@@ -186,7 +222,7 @@ const pastEditions = [
 
 				<p class="join-note">
 					開催期間中に、共通テーマに沿った回を配信していただくだけです。
-					5分のミニトークから雑談、対談まで大歓迎。
+					5〜10分のショートトークから雑談回まで大歓迎です。
 				</p>
 			</div>
 
@@ -297,6 +333,15 @@ const pastEditions = [
 	.edition__text {
 		margin-top: var(--space-md);
 		max-width: var(--width-narrow);
+		color: var(--color-text-muted);
+		line-height: var(--leading-normal);
+	}
+
+	/* テーマのきっかけになった配信回。紹介文より一段控えめに */
+	.edition__origin {
+		margin-top: var(--space-sm);
+		max-width: var(--width-narrow);
+		font-size: var(--text-sm);
 		color: var(--color-text-muted);
 		line-height: var(--leading-normal);
 	}
